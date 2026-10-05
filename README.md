@@ -1,70 +1,125 @@
-# Laboratory Activity 4: Analog Input, PWM, and DAC
+# Laboratory Activity 4 – Analog Input, PWM, and DAC
+
+**Course:** BCA152 – Microcontrollers
+**Laboratory Activity:** No. 4
+**Student Name:** Emmery Kelsey V. Mendoza
 
 ## Overview
-This laboratory activity demonstrates analog data acquisition using the ESP32 SAR ADC, digital-to-analog conversion via the internal 8-bit DAC, and duty-cycle-based power modulation using LEDC PWM.
 
----
+This laboratory activity demonstrates the use of analog input, Pulse Width Modulation (PWM), and Digital-to-Analog Conversion (DAC) using an ESP32 microcontroller.
 
-## Hardware Configuration & Pin Assignments
-- **GPIO 34 (ADC1_CH6)**: Potentiometer center wiper (Analog Input, configured with 11 dB attenuation for full 0–3.3V range).
-- **GPIO 19 (LEDC PWM)**: Workstation indicator LED via 220 Ω current-limiting resistor to GND.
-- **GPIO 25 (DAC1)**: Built-in 8-bit digital-to-analog converter output probed with a Digital Multimeter (DMM).
+The project contains examples that demonstrate reading an analog signal from a potentiometer, controlling an LED using PWM, and generating DAC voltage levels with ADC verification.
 
----
+## Objectives
 
-## 1. Experimental Data & Measurement Tables
+* Understand analog input using the ESP32 ADC.
+* Read analog values from a potentiometer.
+* Control LED brightness using PWM.
+* Understand PWM frequency and resolution.
+* Generate analog voltage levels using the ESP32 DAC.
+* Verify DAC output using an ADC reading.
+* Observe sensor and output values through the Serial Monitor.
 
-### Table A: Potentiometer Readings & PWM Duty Cycle (Examples 3 & 4)
-*Mathematical mapping from 12-bit ADC ($0 - 4095$) to 8-bit PWM duty cycle ($0 - 255$):*
-$$\text{Duty} = \left\lfloor \frac{\text{ADC}_{\text{raw}}}{4095} \times 255 \right\rfloor$$
+## Hardware and Components
 
-| Knob Position | Raw ADC Reading (`analogRead`) | Measured Input Voltage (V) | Predicted PWM Duty | Observed PWM Duty (`ledcWrite`) | LED State |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Position 1 (Min / 0%)** | 0 | 0.00 V | 0 | 0 | Completely OFF |
-| **Position 2 (~25%)** | 1024 | 0.81 V | 63 | 64 | Dimly lit |
-| **Position 3 (~50%)** | 2048 | 1.63 V | 127 | 128 | Medium brightness |
-| **Position 4 (~75%)** | 3072 | 2.45 V | 191 | 191 | Bright |
-| **Position 5 (Max / 100%)**| 4095 | 3.28 V | 255 | 255 | Full brightness |
+* ESP32 Development Board
+* Potentiometer
+* LED
+* Resistor
+* Breadboard
+* Jumper wires
+* Connecting wires
 
----
+## Software and Tools
 
-### Table B: DAC Output Voltage Measurements (Example 5)
-*Measurements recorded on GPIO 25 with a DMM across the five required code settings:*
+* Visual Studio Code
+* PlatformIO
+* Arduino Framework
+* ESP32 Development Platform
+* Serial Monitor
+* Git and GitHub
 
-| Step | DAC Code Setting (8-bit) | Ideal Theoretical Voltage | Measured DMM Voltage | Percentage Error (%) |
-| :--- | :--- | :--- | :--- | :--- |
-| **1** | 0 | 0.00 V | 0.08 V | N/A (Offset voltage) |
-| **2** | 64 | 0.83 V | 0.84 V | +1.2% |
-| **3** | 128 | 1.66 V | 1.67 V | +0.6% |
-| **4** | 192 | 2.48 V | 2.49 V | +0.4% |
-| **5** | 255 | 3.30 V | 3.21 V | -2.7% |
+## Laboratory Exercises
 
----
+### Example 3
 
-## 2. Technical Discussion & Analysis
+`example3.cpp` is included in the project structure for the laboratory activity.
 
-### Why PWM is Not the Same Signal as a DAC Output
-- **Pulse Width Modulation (PWM on GPIO 19)**: Produces a **purely digital square wave** oscillating rapidly between fixed discrete logic levels ($0\text{ V}$ and $3.3\text{ V}$). The apparent "analog" effect is an illusion created by varying the duty cycle (ratio of on-time to total period), which changes the average electrical power delivered over time. If examined on an oscilloscope, the voltage never sits between $0\text{V}$ and $3.3\text{V}$.
-- **Digital-to-Analog Converter (DAC on GPIO 25)**: Produces a **genuine, steady analog DC voltage level** via an internal resistor ladder network and output buffer. The voltage physically exists at the programmed potential (e.g., exactly $1.67\text{ V}$ for code $128$) without switching or high-frequency ripple.
+### Example 4 – PWM LED Control Using Potentiometer
 
-### Why ADC Endpoints Saturate
-The ESP32's 12-bit SAR ADC exhibits non-linear behavior near the supply rails:
-1. **Low-End Saturation ($0\text{ V}$ to $\sim0.1\text{ V}$)**: Internal comparator offset prevents the ADC from distinguishing voltages below approximately $100\text{ mV}$, causing readings near zero to clamp/saturate prematurely at 0.
-2. **High-End Saturation ($\sim3.15\text{ V}$ to $3.3\text{ V}$)**: With attenuation configured to $11\text{ dB}$, internal reference scaling non-linearities compress and cap the ADC counts before reaching the true $3.3\text{ V}$ rail, causing any input above roughly $3.15\text{ V}$ to saturate at the maximum value of $4095$.
+This example reads an analog value from a potentiometer connected to **GPIO 34** and maps the 12-bit ADC reading to an 8-bit PWM duty cycle.
 
----
+The LED is connected to **GPIO 19**. The PWM signal uses a frequency of **5 kHz** and an **8-bit resolution**, allowing the LED output to be controlled from 0 to 255.
 
-## 3. Project Structure
+The program also supports both ESP32 Arduino Core version 2.x and version 3.x or newer.
+
+**Pin Configuration:**
+
+| Component     | ESP32 Pin |
+| ------------- | --------- |
+| Potentiometer | GPIO 34   |
+| LED           | GPIO 19   |
+
+**Configuration:**
+
+* ADC Resolution: 12-bit
+* ADC Range: 0–4095
+* PWM Frequency: 5 kHz
+* PWM Resolution: 8-bit
+* PWM Duty Range: 0–255
+* Serial Baud Rate: 115200
+
+### Example 5 – DAC Voltage Generation and ADC Verification
+
+This example generates different DAC output levels through **GPIO 25** using the ESP32's built-in DAC.
+
+The DAC values used are:
+
 ```text
-Lab4-Analog-PWM-DAC/
+0, 64, 128, 192, 255
+```
+
+The generated voltage is then verified through an ADC connected to **GPIO 34**. The measured voltage is displayed through the Serial Monitor.
+
+**Pin Configuration:**
+
+| Function         | ESP32 Pin |
+| ---------------- | --------- |
+| DAC Output       | GPIO 25   |
+| ADC Verification | GPIO 34   |
+
+**Configuration:**
+
+* DAC Resolution: 8-bit
+* ADC Resolution: 12-bit
+* ADC Attenuation: 11 dB
+* Serial Baud Rate: 115200
+
+## Project Structure
+
+```text
+Laboratory-Activity-4-Analog-Input-PWM-and-DAC/
+├── include/
+├── lib/
+├── src/
+│   ├── example3.cpp
+│   ├── example4.cpp
+│   └── example5.cpp
+├── test/
+├── .gitignore
 ├── platformio.ini
 ├── README.md
-└── src/
-    ├── example3.cpp    # Analog Input Reading (GPIO 34)
-    ├── example4.cpp    # LED PWM Dimming (GPIO 19)
-    └── example5.cpp    # DAC Output Generation (GPIO 25)
+└── documentation.mp4
 ```
----
 
-## Laboratory Demonstration
-https://drive.google.com/drive/folders/1wrWAnmnJ7MWS8m70YYQ9kyIzV3OJyWDB?usp=sharing
+## Documentation Video
+
+[Watch the Documentation Video](./documentation.mp4)
+
+## GitHub Repository
+
+[View the GitHub Repository](https://github.com/Kelixtine/Laboratory-Activity-4-Analog-Input-PWM-and-DAC)
+
+## Conclusion
+
+This laboratory activity provided practical experience with the ESP32's analog and output capabilities. The exercises demonstrated analog input through a potentiometer, PWM-based LED control, and DAC voltage generation with ADC verification. These activities helped reinforce the relationship between digital values, analog signals, and microcontroller output control.
